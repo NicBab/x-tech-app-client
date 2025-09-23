@@ -38,7 +38,7 @@ export default function SubmittedTimesTable({
   }, [rows, searchTerm]);
 
   const columns: GridColDef<TimeEntryGroup>[] = [
-    { field: "id", headerName: "Entry ID", width: 170 },
+    // { field: "id", headerName: "Entry ID", width: 170 },
     {
       field: "employeeName",
       headerName: "Employee",

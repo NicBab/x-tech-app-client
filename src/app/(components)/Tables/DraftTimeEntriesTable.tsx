@@ -46,7 +46,7 @@ export default function DraftTimeEntriesTable({
   }, [rows, searchTerm]);
 
   const columns: GridColDef<TimeEntryGroup>[] = [
-    { field: "id", headerName: "Entry ID", width: 170 },
+    // { field: "id", headerName: "Entry ID", width: 170 },
     {
       field: "employeeName",
       headerName: "Employee",
@@ -80,7 +80,7 @@ export default function DraftTimeEntriesTable({
       width: 180,
       sortable: false,
       renderCell: (params: GridRenderCellParams<TimeEntryGroup>) => (
-        <div className="flex gap-3 items-center">
+        <div className="flex gap-5 items-center mt-3">
           {/* Edit */}
           <button
             onClick={(e) => { e.stopPropagation(); onRowClick?.(params.row.id); }}
