@@ -4,6 +4,9 @@ import "./globals.css";
 
 import StoreProvider from "@/redux/provider"; // wrap Redux once here
 import ToasterProvider from "@/app/(components)/toaster-provider/ToasterProvider";
+import ThemeWatcher from "@/app/(components)/theme-watcher/ThemeWatcher";
+import MuiThemeProvider from "@/app/(components)/mui-theme-provider/MuiThemeProvider";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,13 +29,40 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <Script
+          id="no-flash"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var persistRoot = localStorage.getItem('persist:root');
+                  if (persistRoot) {
+                    var root = JSON.parse(persistRoot);
+                    if (root.global) {
+                      var global = JSON.parse(root.global);
+                      if (global.isDarkMode) {
+                        document.documentElement.classList.add('dark');
+                      }
+                    }
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <StoreProvider>
-          <ToasterProvider />
-          {children}
+          <ThemeWatcher />
+          <MuiThemeProvider>
+            <ToasterProvider />
+            {children}
+          </MuiThemeProvider>
         </StoreProvider>
       </body>
     </html>
