@@ -105,10 +105,10 @@ export default function DLRTable({
     <div className="flex flex-col">
       {/* SEARCH */}
       <div className="mb-6">
-        <div className="flex items-center border-2 border-gray-200 rounded">
-          <SearchIcon className="w-5 h-5 text-gray-500 m-2" />
+        <div className="flex items-center border border-input rounded">
+          <SearchIcon className="w-5 h-5 text-muted-foreground m-2" />
           <input
-            className="w-full py-2 px-4 rounded bg-white text-black dark:bg-zinc-800 dark:text-gray-100"
+            className="w-full py-2 px-4 rounded bg-background text-foreground placeholder:text-muted-foreground focus-visible:outline-none"
             placeholder={`Search ${title}...`}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -136,7 +136,7 @@ export default function DLRTable({
         autoHeight
         loading={busy}
         onRowClick={(params) => onRowClick?.(params.row as DLR)}
-        className="bg-white shadow rounded-lg border border-gray-200 !text-gray-700 dark:bg-zinc-900 dark:!text-gray-300"
+        className="shadow rounded-lg border border-input"
       />
     </div>
   );

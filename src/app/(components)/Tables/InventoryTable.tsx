@@ -64,10 +64,10 @@ const Inventory = () => {
     <div className="flex flex-col">
       {/* SEARCH */}
       <div className="mb-6">
-        <div className="flex items-center border-2 border-gray-200 rounded">
-          <SearchIcon className="w-5 h-5 text-gray-500 m-2" />
+        <div className="flex items-center border border-input rounded">
+          <SearchIcon className="w-5 h-5 text-muted-foreground m-2" />
           <input
-            className="w-full py-2 px-4 rounded bg-white text-black"
+            className="w-full py-2 px-4 rounded bg-background text-foreground placeholder:text-muted-foreground focus-visible:outline-none"
             placeholder="Search inventory..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -93,7 +93,7 @@ const Inventory = () => {
         getRowId={(row) => row.productId}
         checkboxSelection
         autoHeight
-        className="bg-white text-black border border-gray-200 shadow"
+        className="shadow rounded-lg border border-input"
       />
     </div>
   );

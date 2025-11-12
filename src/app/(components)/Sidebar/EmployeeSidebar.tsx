@@ -46,17 +46,17 @@ const SidebarLink = ({
         className={`cursor-pointer flex items-center ${
           isCollapsed ? "justify-center py-4" : "justify-start px-8 py-4"
         }
-        hover:text-blue-500 hover:bg-blue-100 gap-3 transition-colors ${
-          isActive ? "bg-blue-200 text-white" : ""
+        hover:bg-sidebar-accent hover:text-sidebar-accent-foreground gap-3 transition-colors ${
+          isActive ? "bg-sidebar-primary text-sidebar-primary-foreground" : ""
         }
       }`}
       >
-        <Icon className="w-6 h-6 !text-gray-700" />
+        <Icon className="w-6 h-6 text-sidebar-foreground" />
 
         <span
           className={`${
             isCollapsed ? "hidden" : "block"
-          } font-medium text-gray-700`}
+          } font-medium text-sidebar-foreground`}
         >
           {label}
         </span>
@@ -77,7 +77,7 @@ const Sidebar = () => {
 
   const sidebarClassNames = `fixed flex flex-col ${
     isSidebarCollapsed ? "w-0 md:w-16" : "w-72 md:w-64"
-  } bg-white transition-all duration-300 overflow-hidden h-full shadow-md z-40`;
+  } bg-sidebar text-sidebar-foreground transition-all duration-300 overflow-hidden h-full shadow-md z-40`;
 
   return (
     <div className={sidebarClassNames}>
@@ -103,7 +103,7 @@ const Sidebar = () => {
         </h1>
 
         <button
-          className="md:hidden px-3 py-3 bg-gray-100 rounded-full hover:bg-blue-100"
+          className="md:hidden px-3 py-3 bg-muted rounded-full hover:bg-sidebar-accent"
           onClick={toggleSidebar}
         >
           <Menu className="w-4 h-4" />
@@ -164,7 +164,7 @@ const Sidebar = () => {
 
       {/* FOOTER */}
       <div className={`${isSidebarCollapsed ? "hidden" : "block"} mb-10`}>
-        <p className="text-center text-xs text-gray-500">&copy; 2025 XTech</p>
+        <p className="text-center text-xs text-muted-foreground">&copy; 2025 XTech</p>
       </div>
     </div>
   );
