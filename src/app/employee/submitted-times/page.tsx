@@ -10,14 +10,26 @@ export default function SubmittedTimesPage() {
   const router = useRouter();
   const { userId, role } = useSelector((s: RootState) => s.user);
 
-  const { data = [], isLoading, isError } = useGetTimeEntriesQuery({
+  const { data = [], isFetching, isLoading, isError, refetch } = useGetTimeEntriesQuery({
     userId: userId ?? "",
     role: (role as "admin" | "user") ?? "user",
     status: "SUBMITTED",
-  });
+    
+  }, {refetchOnMountOrArgChange: true, skip: !userId});
+  
+    // const { data = [], isFetching, isError, refetch } = useGetDLRsQuery(
+    //   { userId: userId ?? "", role: "employee", status: "PENDING" },
+    //   { refetchOnMountOrArgChange: true, skip: !userId }
+    // );
 
   return (
     <div className="p-6">
+          <div className="mb-4 flex items-center justify-between">
+       
+        <button className="text-sm underline pointer-events-auto" onClick={() => refetch()} disabled={isFetching}>
+          Refresh
+        </button>
+      </div>
       <SubmittedTimesTable
         rows={(data || []).filter((e) => e.userId === userId)}
         loading={isLoading}

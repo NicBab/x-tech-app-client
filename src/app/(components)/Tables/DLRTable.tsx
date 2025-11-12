@@ -97,6 +97,7 @@ export default function DLRTable({
         );
       },
     },
+    
   ];
 
   const busy = (isLoading ?? loading) ?? false;

@@ -15,11 +15,11 @@ export default function DraftedTimesPage() {
   const router = useRouter();
   const { userId, role } = useSelector((s: RootState) => s.user);
 
-  const { data = [], isLoading, isError } = useGetTimeEntriesQuery({
+  const { data = [], isFetching, isLoading, isError, refetch } = useGetTimeEntriesQuery({
     userId: userId ?? "",
     role: (role as "admin" | "employee") ?? "employee",
     status: "DRAFT",
-  });
+  }, { refetchOnMountOrArgChange: true, skip: !userId });
 
   const [submitDraft, { isLoading: isSubmitting, originalArgs: submittingArg }] =
     useSubmitTimeEntryMutation();
@@ -49,6 +49,12 @@ export default function DraftedTimesPage() {
 
   return (
     <div className="p-6">
+          <div className="mb-4 flex items-center justify-between">
+        
+        <button className="text-sm underline pointer-events-auto" onClick={() => refetch()} disabled={isFetching}>
+          Refresh
+        </button>
+      </div>
       <DraftTimeEntriesTable
         rows={(data || []).filter((e) => e.userId === userId)}
         loading={isLoading}
