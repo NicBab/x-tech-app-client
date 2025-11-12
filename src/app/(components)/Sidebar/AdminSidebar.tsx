@@ -174,7 +174,7 @@ const Sidebar = () => {
 
       {/* FOOTER */}
       <div className={`${isSidebarCollapsed ? "hidden" : "block"} mb-10`}>
-        <p className="text-center text-xs text-gray-500">&copy; 2024 XTech</p>
+        <p className="text-center text-xs text-gray-500">&copy; 2025 XTech</p>
       </div>
     </div>
   );

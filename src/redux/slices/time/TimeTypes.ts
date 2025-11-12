@@ -1,3 +1,4 @@
+// redux/slices/time/TimeTypes.ts
 export interface TimeEntryJob {
   id: string;
   groupId: string;
@@ -6,6 +7,8 @@ export interface TimeEntryJob {
   comments?: string;
   mileage?: number;
   extraExpenses?: string;
+  startTime?: string | null; // NEW
+  endTime?: string | null;   // NEW
 }
 
 export interface TimeEntryGroup {

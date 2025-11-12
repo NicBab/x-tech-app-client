@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,17 +12,17 @@ import toast from "react-hot-toast";
 import {
   useUpsertTimeEntryMutation,
   useUpdateTimeEntryMutation,
-  useResubmitTimeEntryMutation, // <-- new RTK mutation
+  useResubmitTimeEntryMutation,
 } from "@/redux/api/api";
 import { useAppSelector } from "@/redux/hooks";
 import { TimeEntryGroup } from "@/redux/slices/time/TimeTypes";
 import { UpsertTimeEntryDTO } from "@/redux/slices/time/TimeDTO";
 
 type Props = {
-  initialGroup?: TimeEntryGroup;                                  // prefill (draft or submitted)
-  editingId?: string;                                             // PATCH /times/:id (draft editing)
-  resubmitId?: string;                                            // POST  /times/:id/resubmit (replace submitted)
-  onDone?: (updated?: Partial<TimeEntryGroup>) => void;           // callback after success
+  initialGroup?: TimeEntryGroup;             // prefill (draft or submitted)
+  editingId?: string;                        // PATCH /times/:id (draft editing)
+  resubmitId?: string;                       // POST  /times/:id/resubmit (replace submitted)
+  onDone?: (updated?: Partial<TimeEntryGroup>) => void; // callback after success
 };
 
 interface JobEntry {
@@ -38,7 +39,11 @@ export default function TimeEntryForm({
   resubmitId,
   onDone,
 }: Props) {
+  const router = useRouter();
   const userId = useAppSelector((s) => s.user.userId) ?? "";
+
+  // helper to coerce to "HH:mm"
+  const toHHMM = (t?: string | null) => (t ? t.slice(0, 5) : "");
 
   // group-level notes
   const [groupNotes, setGroupNotes] = useState<string>("");
@@ -67,8 +72,8 @@ export default function TimeEntryForm({
     const mapped: JobEntry[] =
       (initialGroup.jobs ?? []).map((j) => ({
         jobNumber: j.jobNumber,
-        startTime: "", // UI-only
-        endTime: "",   // UI-only
+        startTime: toHHMM(j.startTime), // PREFILL if stored
+        endTime: toHHMM(j.endTime),     // PREFILL if stored
         notes: j.comments ?? "",
         existingHours: Number(j.hoursWorked) || 0,
       })) || [];
@@ -116,41 +121,21 @@ export default function TimeEntryForm({
 
   const buildPayload = (status: "DRAFT" | "SUBMITTED"): UpsertTimeEntryDTO => {
     const apiJobs = jobs
-  .filter((j) => j.jobNumber.trim() !== "")
-  .map((j) => {
-    const fromTimes = getDurationInHours(j.startTime, j.endTime);
-    const hoursWorked = Number(
-      (fromTimes > 0 ? fromTimes : (j.existingHours ?? 0)).toFixed(2)
-    );
+      .filter((j) => j.jobNumber.trim() !== "")
+      .map((j) => {
+        const fromTimes = getDurationInHours(j.startTime, j.endTime);
+        const hoursWorked = Number(
+          (fromTimes > 0 ? fromTimes : (j.existingHours ?? 0)).toFixed(2)
+        );
 
-    //only include fields you have; no nulls
-    const job: { jobNumber: string; hoursWorked: number; comments?: string } = {
-      jobNumber: j.jobNumber.trim(),
-      hoursWorked,
-    };
-    if (j.notes?.trim()) job.comments = j.notes.trim();
-    return job;
-  });
-    // const apiJobs = jobs
-    //   .filter((j) => j.jobNumber.trim() !== "")
-    //   .map((j) => {
-    //     const fromTimes = getDurationInHours(j.startTime, j.endTime);
-    //     const hoursWorked = Number(
-    //       (fromTimes > 0 ? fromTimes : (j.existingHours ?? 0)).toFixed(2)
-    //     );
-    //     const job: {
-    //       jobNumber: string;
-    //       hoursWorked: number;
-    //       comments?: string;
-    //       mileage?: number | null;
-    //       extraExpenses?: string | null;
-    //     } = {
-    //       jobNumber: j.jobNumber.trim(),
-    //       hoursWorked,
-    //     };
-    //     if (j.notes?.trim()) job.comments = j.notes.trim();
-    //     return job;
-    //   });
+        return {
+          jobNumber: j.jobNumber.trim(),
+          hoursWorked,
+          comments: j.notes?.trim() || undefined,
+          startTime: j.startTime || undefined, // NEW
+          endTime: j.endTime || undefined,     // NEW
+        };
+      });
 
     const dto: UpsertTimeEntryDTO = {
       ...(editingId ? { id: editingId } : {}),
@@ -169,8 +154,6 @@ export default function TimeEntryForm({
   const onSaveDraft = async () => {
     if (!userId) return toast.error("No userId found.");
     if (resubmitId) {
-      // If you want to allow "save as draft" during resubmit, you could implement
-      // a separate mutation to create a DRAFT here. For now, we block it:
       return toast.error("Saving draft is not available while re-submitting.");
     }
 
@@ -178,8 +161,8 @@ export default function TimeEntryForm({
     try {
       await toast.promise(
         editingId
-          ? updateEntry({ id: editingId, ...dto }).unwrap() // PATCH /times/:id
-          : upsert(dto).unwrap(),                            // POST /times
+          ? updateEntry({ id: editingId, ...dto }).unwrap()
+          : upsert(dto).unwrap(),
         { loading: "Saving draft…", success: "Draft saved", error: "Failed to save draft" }
       );
       onDone?.();
@@ -192,14 +175,11 @@ export default function TimeEntryForm({
     if (!userId) return toast.error("No userId found.");
 
     const dto = buildPayload("SUBMITTED");
-
-    // Simple guard: require positive hours to submit
     const total = dto.jobs.reduce((s, j) => s + (Number(j.hoursWorked) || 0), 0);
     if (total <= 0) return toast.error("Total hours must be greater than 0 to submit.");
 
     try {
       if (resubmitId) {
-        // RE-SUBMIT (replace a submitted record)
         await toast.promise(
           resubmitEntry({
             id: resubmitId,
@@ -212,16 +192,15 @@ export default function TimeEntryForm({
             },
           }).unwrap(),
           { loading: "Re-submitting…", success: "Re-submitted", error: "Failed to re-submit" }
-          );
+        );
         onDone?.();
         return;
       }
 
-      // Normal create/patch submit (draft -> submitted or fresh submitted)
       await toast.promise(
         editingId
-          ? updateEntry({ id: editingId, ...dto }).unwrap() // PATCH /times/:id
-          : upsert(dto).unwrap(),                            // POST /times
+          ? updateEntry({ id: editingId, ...dto }).unwrap()
+          : upsert(dto).unwrap(),
         { loading: "Submitting…", success: "Time entry submitted", error: "Failed to submit" }
       );
       onDone?.();
@@ -316,6 +295,16 @@ export default function TimeEntryForm({
       </div>
 
       <div className="flex justify-end gap-4">
+        {/* Cancel button */}
+        <Button
+          variant="outline"
+          type="button"
+          onClick={() => router.back()}
+          disabled={busy}
+        >
+          Cancel
+        </Button>
+
         {!resubmitId && (
           <Button
             variant="secondary"

@@ -28,7 +28,7 @@ export default function AdminMyDraftedTimesPage() {
     useDeleteTimeEntryMutation();
 
   const onRowClick = (id: string) => router.push(`/admin/drafted-times/${id}`); // or your preferred edit route
-  const onCreate = () => router.push("/employee/new-time-entry");
+  const onCreate = () => router.push("/admin/new-time-entry");
 
   const onSubmit = async (id: string) => {
     try {
